@@ -1,0 +1,122 @@
+/* Page layout: game screen on top, tabs, then the control tray (phone first). */
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: #1e2130;
+  overscroll-behavior: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
+}
+
+#app {
+  height: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+#screen-wrap {
+  background: #05060a;
+  border-bottom: 2px solid #161925;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 3px 0;
+}
+
+/* The canvas is 256x192; main.ts sets its CSS size to a whole-number scale. */
+#screen {
+  display: block;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+img { image-rendering: pixelated; display: block; }
+
+button {
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.key { line-height: 0; }
+.key.down, .key:active { transform: translateY(2px); }
+
+#tabs {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  padding: 12px 5px 0;
+}
+#tabs img { width: 92px; height: 50px; }
+/* Narrow phones: shrink the four tabs to fit the width. */
+@media (max-width: 390px) { #tabs img { width: calc((100vw - 24px) / 4); height: auto; } }
+
+#tray {
+  flex-grow: 1;
+  margin: 14px 10px 18px;
+  background: #272b3d;
+  border: 2px solid #161925;
+  box-shadow: inset 0 2px 0 #343a50;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 32px;
+  padding: 0 14px;
+  min-height: 300px;
+}
+.tray-row { display: flex; justify-content: space-between; align-items: center; }
+.tray-row.center { justify-content: center; gap: 12px; }
+
+#dpad { position: relative; width: 160px; height: 168px; }
+#dpad-img { width: 160px; height: 168px; }
+#dpad-hits {
+  position: absolute; left: 2px; top: 2px; width: 156px; height: 156px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+}
+#dpad-hits button.down { background: rgba(22, 25, 37, 0.25); }
+
+#ab { display: flex; gap: 14px; align-items: flex-start; }
+#btn-b { margin-top: 44px; }
+#btn-a img { width: 68px; height: 94px; }
+#btn-b img { width: 60px; height: 86px; }
+#btn-cast img, #btn-actions img, #btn-menu img { width: 96px; height: 46px; }
+/* Three buttons side by side: squeeze the gap on narrow phones. */
+@media (max-width: 380px) { .tray-row.center { gap: 6px; } }
+
+/* Desktop with a mouse: the keyboard does the pad's work, so only the
+   CAST, ACTIONS and MENU buttons stay, in a slim row under the screen. */
+@media (hover: hover) and (pointer: fine) {
+  #tray { flex-grow: 0; min-height: 0; margin: 10px 0 0; padding: 0; background: none; border: 0; box-shadow: none; }
+  #tray .tray-row:not(.center) { display: none; }
+  #tray .key { cursor: pointer; }
+  #app { justify-content: center; max-width: none; }
+  #screen-wrap { background: none; border: 0; }
+}
+
+/* The hidden field that brings up the phone keyboard for names and seeds.
+   16px stops iOS zooming in; it sits off to the side, invisible. */
+#type-field {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  font-size: 16px;
+  border: 0;
+  padding: 0;
+  pointer-events: none;
+}

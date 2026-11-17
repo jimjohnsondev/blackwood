@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#1e2130">
+  <title>Blackwood (full game)</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="./src/style.css">
+  <!-- Lets the game be installed as an app that works offline (the normal build only). -->
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <meta name="theme-color" content="#000000" />
+  <link rel="apple-touch-icon" href="./icon-192.png" />
+</head>
+<body>
+  <main id="app">
+    <div id="screen-wrap">
+      <canvas id="screen" width="256" height="192" aria-label="Game screen"></canvas>
+    </div>
+
+    <nav id="tabs" aria-label="Panels">
+      <button class="key" data-action="tab:map" aria-label="Map"><img alt=""></button>
+      <button class="key" data-action="tab:items" aria-label="Items"><img alt=""></button>
+      <button class="key" data-action="tab:stats" aria-label="Stats"><img alt=""></button>
+      <button class="key" data-action="tab:journal" aria-label="Journal"><img alt=""></button>
+    </nav>
+
+    <section id="tray" aria-label="Controls">
+      <div class="tray-row">
+        <div id="dpad">
+          <img id="dpad-img" alt="">
+          <div id="dpad-hits">
+            <span></span>
+            <button data-action="up" aria-label="Up"></button>
+            <span></span>
+            <button data-action="left" aria-label="Left"></button>
+            <span></span>
+            <button data-action="right" aria-label="Right"></button>
+            <span></span>
+            <button data-action="down" aria-label="Down"></button>
+            <span></span>
+          </div>
+        </div>
+        <div id="ab">
+          <button class="key" id="btn-b" data-action="b" aria-label="B, back"><img alt=""></button>
+          <button class="key" id="btn-a" data-action="a" aria-label="A, act"><img alt=""></button>
+        </div>
+      </div>
+      <div class="tray-row center">
+        <button class="key" id="btn-cast" data-action="cast" aria-label="Cast or fire"><img alt=""></button>
+        <button class="key" id="btn-actions" data-action="actions" aria-label="Actions"><img alt=""></button>
+        <button class="key" id="btn-menu" data-action="menu" aria-label="Menu"><img alt=""></button>
+      </div>
+    </section>
+  </main>
+  <script type="module" src="./src/main.ts"></script>
+</body>
+</html>

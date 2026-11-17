@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+
+# Build output (npm run build / npm run build:single)
+dist/
+dist-single/
+*.tsbuildinfo
+
+# Vite / Vitest caches
+.vite/
+coverage/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Script output (e.g. scripts/worldmap.ts)
+*.ppm
+
+# Editor / OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Claude Code local settings
+.claude/settings.local.json
