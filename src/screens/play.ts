@@ -927,7 +927,7 @@ export class PlayScene implements Scene {
   private drawStats(s: Screen): void {
     const g = this.game;
     const p = g.player;
-    s.box(0, 1, 32, 19, C.grey);
+    s.box(0, 1, 32, 20, C.grey);
     const hero = playerArt(p.cls, p.scheme, 'down');
     s.art(hero.art, 220, 14);
     s.text(p.name, 2, 2, C.gold);
@@ -968,9 +968,10 @@ export class PlayScene implements Scene {
     }
     const weapon = p.equip.weapon ? ITEMS[p.equip.weapon].name : 'FISTS';
     s.text('WEAPON', 2, 14, C.dim);
-    s.text(weapon, 9, 14);
+    s.text(weapon.slice(0, 21), 9, 14);
     s.text('READY', 2, 15, C.dim);
-    s.text(p.ready ? p.ready.toUpperCase() : 'NOTHING', 9, 15);
+    // HORSE sits at column 22 on this row, so keep READY short when it shows.
+    s.text((p.ready ? p.ready.toUpperCase() : 'NOTHING').slice(0, p.horse ? 12 : 21), 9, 15);
     const here = g.at ? g.world.sites[g.at.siteId] : null;
     if (here && (here.kind === 'village' || here.kind === 'hamlet')) {
       s.text('STANDING', 2, 16, C.dim);

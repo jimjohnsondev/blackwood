@@ -39,7 +39,17 @@ html, body {
   image-rendering: crisp-edges;
 }
 
-img { image-rendering: pixelated; display: block; }
+/* Art images never take a touch themselves: a long press on one (the d-pad's
+   centre has no button over it) would open Chrome's "Copy / Download image" menu. */
+img {
+  image-rendering: pixelated;
+  display: block;
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
+
+/* The controls own every gesture: no scrolling, zooming or long-press menus. */
+#tabs, #tray { touch-action: none; }
 
 button {
   background: none;

@@ -13,6 +13,10 @@ export function listenTouch(send: (a: Action) => void): void {
     send({ kind: 'point', x: ((e.clientX - r.left) / r.width) * 256, y: ((e.clientY - r.top) / r.height) * 192 });
   });
 
+  // A long press anywhere on the page (gaps in the tray, the d-pad's centre) must not
+  // open the browser's context menu; it would also cancel a held direction.
+  document.addEventListener('contextmenu', (e) => e.preventDefault());
+
   const buttons = document.querySelectorAll<HTMLElement>('[data-action]');
   buttons.forEach((el) => {
     const action = parseAction(el.dataset.action ?? '');
