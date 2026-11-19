@@ -48,7 +48,7 @@ export const CLASSES: Record<ClassId, ClassInfo> = {
     main: 'str',
     hitDie: 10,
     attackEvery: 1,
-    defenseBonus: 2,
+    defenseBonus: 0,
     sneakBase: 0,
     lockpickBase: 0,
     magicBase: 0,
@@ -64,7 +64,7 @@ export const CLASSES: Record<ClassId, ClassInfo> = {
       { item: 'healing', count: 1 },
     ],
     gold: 30,
-    blurb: ['STRONG AND HARD TO KILL.', 'ANY WEAPON, ANY ARMOUR.', '+2 DEFENSE.'],
+    blurb: ['STRONG AND HARD TO KILL.', 'ANY WEAPON, ANY ARMOUR.', 'HITS MORE OFTEN AS THEY RISE.'],
   },
   thief: {
     name: 'THIEF',
@@ -144,10 +144,10 @@ export type PerkId =
 export const PERKS: Record<ClassId, { id: PerkId; name: string; desc: string }[]> = {
   warrior: [
     { id: 'cleave', name: 'CLEAVE', desc: 'A KILL IN MELEE GIVES A FREE SWING AT ANOTHER FOE.' },
-    { id: 'ironhide', name: 'IRON HIDE', desc: 'DEFENSE +2.' },
+    { id: 'ironhide', name: 'IRON HIDE', desc: 'EVERY BLOW YOU TAKE DOES 1 LESS DAMAGE.' },
     { id: 'secondwind', name: 'SECOND WIND', desc: 'ONCE A DAY, NEAR DEATH, HEAL HALF YOUR HP.' },
     { id: 'weaponmaster', name: 'WEAPON MASTER', desc: 'MELEE ATTACK +1, DAMAGE +2.' },
-    { id: 'bulwark', name: 'BULWARK', desc: 'A SHIELD GIVES +2 MORE DEFENSE.' },
+    { id: 'bulwark', name: 'BULWARK', desc: 'A SHIELD GIVES +1 MORE DEFENSE.' },
   ],
   thief: [
     { id: 'assassin', name: 'ASSASSIN', desc: 'BACKSTABS AND AMBUSHES DO TRIPLE DAMAGE.' },
@@ -194,7 +194,7 @@ export interface Spell {
 
 export const SPELLS: Spell[] = [
   { id: 'spark', name: 'SPARK', mp: 0, level: 1, ranged: true, desc: 'FREE BOLT. D4 + WIS MOD.' },
-  { id: 'ward', name: 'WARD', mp: 2, level: 1, ranged: false, desc: 'SOAKS UP THE NEXT BLOWS.' },
+  { id: 'ward', name: 'WARD', mp: 2, level: 1, ranged: false, desc: 'SOAKS UP BLOWS. ONE A FIGHT.' },
   { id: 'mend', name: 'MEND', mp: 2, level: 1, ranged: false, desc: 'HEALS D6 + HEAL.' },
   { id: 'glow', name: 'GLOW', mp: 1, level: 1, ranged: false, desc: 'LIGHT FOR DARK PLACES.' },
   { id: 'sleep', name: 'SLEEP', mp: 3, level: 3, ranged: false, desc: 'WEAK FOES NEARBY SLEEP.' },

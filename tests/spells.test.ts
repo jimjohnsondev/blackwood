@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Game } from '../src/game/game';
+import { Game, WARD_COOLDOWN } from '../src/game/game';
 import type { ClassId } from '../src/game/rules';
 import { T } from '../src/game/terrain';
 import { PlayScene } from '../src/screens/play';
@@ -93,6 +93,21 @@ describe('spells', () => {
     inner(g).hurtPlayer(3);
     expect(g.player.ward).toBeUndefined();
     expect(g.player.hp).toBe(hp - 2);
+  });
+
+  it('WARD can be raised only once a fight, without spending MP or a turn on a refusal', () => {
+    const g = newGame('wizard');
+    g.useQuick('ward');
+    inner(g).hurtPlayer(g.player.ward!.points); // exactly enough to shatter it
+    g.player.hp = g.player.maxHp;
+    const mp = g.player.mp, turn = g.turn;
+    g.useQuick('ward');
+    expect(g.player.ward).toBeUndefined();
+    expect(g.player.mp).toBe(mp);
+    expect(g.turn).toBe(turn);
+    for (let i = 0; i < WARD_COOLDOWN; i++) inner(g).endTurn();
+    g.useQuick('ward');
+    expect(g.player.ward).toBeTruthy();
   });
 
   it('MP comes back as you walk', () => {

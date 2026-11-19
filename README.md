@@ -76,7 +76,9 @@ This is the full game, built on a copy of the MVP. It saves to its own slot
   the top of the map: left/right to choose, A or the button again to use. It opens on
   whatever you used last, so repeating is two taps. A no longer fires anything.
 - SPARK is free (d4 + WIS mod). MP comes back as you walk. The wizard's hit die is d6.
-- WARD (2 MP) soaks up 5 + level damage. BLINK (level 3) jumps you away from danger.
+- WARD (2 MP) soaks up 4 + half your level + WIS mod damage, and can't be raised again for 30
+  turns after casting (`WARD_COOLDOWN`): about one ward a fight. BLINK (level 3) jumps you away
+  from danger.
   FIREBALL (level 5) bursts on impact and burns everything around it.
 - `npx vite-node scripts/balance.ts` compares the new wizard with the MVP one, in single
   fights and over four fights in a row.
@@ -133,7 +135,9 @@ This is the full game, built on a copy of the MVP. It saves to its own slot
 - Each level: train one skill (+1 to ATTACK, DEFENSE, SNEAK, LOCKPICK, MAGIC or HEAL). Levels 3, 6,
   9, 12 and 15: choose a perk from three on offer. Levels 4, 8 and 12: raise an attribute. These
   choices can't be skipped; owed ones come back after loading or switching tabs.
-- Perks, five per class. Warrior: CLEAVE, IRON HIDE, SECOND WIND, WEAPON MASTER, BULWARK.
+- Perks, five per class. Warrior: CLEAVE, IRON HIDE (every blow does 1 less damage), SECOND WIND,
+  WEAPON MASTER, BULWARK (a shield gives +1 more defense). The warrior has no class defense bonus:
+  their edge is ATTACK growing every level, and the heaviest armour.
   Thief: ASSASSIN, SHADOW STEP, FENCE, LIGHT FINGERS, DEADEYE. Wizard: SPELL FOCUS, DEEP WELL,
   FAMILIAR, QUICK MIND, ARCANE WARD.
 - Spellbook: tomes teach DETECT, SHIELD, HOLD, RECALL, BANISH and CHAIN BOLT (each needs a
@@ -266,6 +270,9 @@ later update).
 
 The game got too easy past level 7: the hardest monster cost a level 15 warrior 7% of their HP.
 `scripts/curve.ts` simulates the difficulty curve; after this pass a fight costs roughly 20-40%.
+(That pass measured a bare warrior. Since the class rebalance, `curve.ts` builds the warrior the way
+a player does: STR on damage, a skill point a level, attribute points and perks. `BARE=1` gives
+the old bare warrior.)
 
 - Stronger forms start at danger 4 (GRIM) and reach DREAD at danger 7. Each step adds 40% HP
   and +1 to attack, defence and damage.

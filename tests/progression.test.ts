@@ -17,6 +17,7 @@ type Inner = {
   gainXp(n: number): void;
   hurtPlayer(n: number): void;
   meleeAttack(a: Actor): void;
+  monsterAttack(a: Actor): void;
   spawnMonster(k: string, x: number, y: number): Actor;
   endTurn(): void;
   die(): void;
@@ -110,7 +111,7 @@ describe('perks', () => {
     const w = newGame('warrior');
     const def = defense(w.player), atk = attackBonus(w.player);
     givePerk(w, 'ironhide'); givePerk(w, 'bulwark'); givePerk(w, 'weaponmaster');
-    expect(defense(w.player)).toBe(def + 4); // the warrior starts with a shield
+    expect(defense(w.player)).toBe(def + 1); // BULWARK: the warrior starts with a shield; IRON HIDE adds no defense
     expect(attackBonus(w.player)).toBe(atk + 1);
     expect(damageBonus(w.player)).toBe(2);
 
@@ -151,7 +152,23 @@ describe('perks', () => {
     expect(b.hp).toBeLessThan(100);
   });
 
-  it('ASSASSIN: backstabs triple the weapon dice', () => {
+  it('IRON HIDE: every blow does 1 less damage, but never less than 1', () => {
+    const hit = (perk: boolean, dmg: number) => {
+      const g = newGame('warrior');
+      clear(g);
+      if (perk) givePerk(g, 'ironhide');
+      inner(g).rng.dice = (_n: number, s: number) => (s === 20 ? 19 : dmg);
+      const bandit = inner(g).spawnMonster('bandit', g.player.x + 1, g.player.y);
+      const hp = g.player.hp = g.player.maxHp = 100;
+      inner(g).monsterAttack(bandit);
+      return hp - g.player.hp;
+    };
+    expect(hit(false, 4)).toBe(4);
+    expect(hit(true, 4)).toBe(3);
+    expect(hit(true, 1)).toBe(1);
+  });
+
+    it('ASSASSIN: backstabs triple the weapon dice', () => {
     const g = newGame('thief');
     clear(g);
     givePerk(g, 'assassin');

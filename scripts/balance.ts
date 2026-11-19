@@ -39,6 +39,7 @@ function fight(h: Hero, id: MonsterId): boolean {
   const m = MONSTERS[id];
   let mhp = rng.dice(m.hp[0], m.hp[1], m.hp[2]);
   let ward = 0;
+  let wardUp = false; // one ward a fight (WARD_COOLDOWN)
   let gap = 3;
   // Sneaking up: the monster gets its check when the thief comes within 6 steps.
   let unseen = who === 'thief-s' && rng.dice(1, 20) + sneaking(p) >= dcFor(m.level);
@@ -47,8 +48,9 @@ function fight(h: Hero, id: MonsterId): boolean {
     if (p.hp < p.maxHp / 3 && h.potions > 0) {
       h.potions--;
       p.hp += rng.dice(2, 4, 2);
-    } else if (who === 'wizard' && ward === 0 && h.mp >= 2) {
+    } else if (who === 'wizard' && !wardUp && h.mp >= 2) {
       h.mp -= 2;
+      wardUp = true;
       ward = WARD(level);
     } else if (gap > 1 && !ranged) {
       // Nothing to shoot with: wait for it to come.
@@ -83,7 +85,8 @@ function fight(h: Hero, id: MonsterId): boolean {
   return p.hp > 0;
 }
 
-const WARD = (level: number) => Number(process.env.WARD_BASE ?? 5) + level * Number(process.env.WARD_PER ?? 1);
+// As in game.ts: 4 + half the level + WIS mod (WIS is 12 here, so +0).
+const WARD = (level: number) => Number(process.env.WARD_BASE ?? 4) + Math.floor(level * Number(process.env.WARD_PER ?? 0.5));
 const pct = (n: number) => `${Math.round(n / 20)}%`.padStart(4);
 
 console.log('ONE FIGHT, FULL HP AND MP');

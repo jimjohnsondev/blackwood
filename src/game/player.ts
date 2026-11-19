@@ -30,6 +30,8 @@ export interface Player {
   light: { turns: number; radius: number };
   /** WARD: damage it will still soak up, and turns before it fades. */
   ward?: { points: number; turns: number };
+  /** Turns before a new WARD can be raised (one ward per fight). */
+  wardCooldown?: number;
   /** Sneaking: half speed, +5 Sneak. Ends on attacking. */
   sneaking?: boolean;
   /** Points put into each skill (from levelling and the background). */
@@ -136,7 +138,7 @@ export function defense(p: Player): number {
   const armour = p.equip.armour ? ITEMS[p.equip.armour].armour ?? 0 : 0;
   const shield = p.equip.shield ? ITEMS[p.equip.shield].armour ?? 0 : 0;
   const grades = bonusOf(p.equip.armour) + bonusOf(p.equip.shield);
-  const perks = (hasPerk(p, 'ironhide') ? 2 : 0) + (hasPerk(p, 'bulwark') && p.equip.shield ? 2 : 0);
+  const perks = hasPerk(p, 'bulwark') && p.equip.shield ? 1 : 0;
   return 10 + armour + shield + grades + perks + (p.shielded ? 4 : 0) + mod(p.attrs.dex) + CLASSES[p.cls].defenseBonus + skillBonus(p, 'defense');
 }
 

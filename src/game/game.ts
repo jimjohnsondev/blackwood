@@ -150,6 +150,8 @@ export interface Creation {
 
 const now = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
 const START_TIME = 8 * 60; // day 1, 08:00
+/** Turns after casting WARD before another can be raised: about one fight. */
+export const WARD_COOLDOWN = 30;
 // Its own save slot, so the MVP and the full game never overwrite each other.
 const SAVE_KEY = 'blackwood-full-save-v1';
 /** 2: the bigger continent with regions (milestone 4). Older saves can't load. */
@@ -669,6 +671,7 @@ export class Game {
     const p = this.player;
     const spell = SPELLS.find((s) => s.id === id)!;
     if (p.mp < spell.mp) return this.say(`NOT ENOUGH MP FOR ${spell.name}.`);
+    if (id === 'ward' && p.wardCooldown) return this.say('YOUR WARD WILL NOT FORM AGAIN SO SOON.');
     if (id === 'spark' || id === 'fireball') return this.fire(id, target);
     if (id === 'blink') return this.blink();
     if (id === 'hold' || id === 'chain') return this.aimedSpell(id, target);
@@ -676,9 +679,11 @@ export class Game {
     p.mp -= spell.mp;
     this.sounds.push('spell');
     if (id === 'ward') {
-      let points = 5 + p.level + Math.max(0, mod(p.attrs.wis));
+      let points = 4 + Math.floor(p.level / 2) + Math.max(0, mod(p.attrs.wis));
       if (hasPerk(p, 'arcaneward')) points = Math.floor(points * 1.5);
       p.ward = { points, turns: hasPerk(p, 'arcaneward') ? 160 : 80 };
+      // One ward a fight: recasting it the moment it breaks made the wizard all but unkillable.
+      p.wardCooldown = WARD_COOLDOWN;
       this.say(`A SHIMMERING WARD SURROUNDS YOU. IT WILL SOAK UP ${points} DAMAGE.`);
     } else if (id === 'mend') {
       const amount = Math.max(1, this.rng.dice(1, 6) + heal(p));
@@ -1708,6 +1713,7 @@ export class Game {
     }
     let dmg = Math.max(1, this.rng.dice(m.dmg[0], m.dmg[1], m.dmg[2]));
     if (roll === 20) dmg *= 2;
+    if (hasPerk(this.player, 'ironhide')) dmg = Math.max(1, dmg - 1);
     this.sounds.push('hurt');
     this.effects.push({ kind: 'flash', cells: [{ x: this.player.x, y: this.player.y }], color: '#ee4444', start: now() });
     this.say(arrow ? `${the(a)}'S ARROW HITS! ${dmg} DAMAGE.` : `${the(a)} ${m.hit}! ${dmg} DAMAGE.`);
@@ -2954,6 +2960,7 @@ export class Game {
     const p = this.player;
     const mpEvery = Math.max(5, 12 - 2 * mod(p.attrs.wis));
     if (p.cls === 'wizard' && p.mp < maxMp(p) && this.turn % (hasPerk(p, 'quickmind') ? Math.ceil(mpEvery / 2) : mpEvery) === 0) p.mp++;
+    if (p.wardCooldown && --p.wardCooldown <= 0) p.wardCooldown = undefined;
     if (p.ward && --p.ward.turns <= 0) {
       p.ward = undefined;
       this.say('YOUR WARD FADES.');
