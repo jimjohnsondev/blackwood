@@ -83,19 +83,72 @@ describe('sneaking', () => {
     };
     expect(tries(true)).toBeGreaterThan(tries(false) + 30);
   });
+
+  it('keeps a high-level thief from being invisible to dangerous monsters', () => {
+    const spotted = (kind: string) => {
+      let seen = 0;
+      for (let i = 0; i < 100; i++) {
+        const g = field();
+        g.time = 12 * 60;
+        g.player.level = 6;
+        g.toggleSneak();
+        const { x, y } = g.player;
+        const m = inner(g).spawnMonster(kind, x + 5, y);
+        g.move('up');
+        g.move('down');
+        if (m.awake) seen++;
+      }
+      return seen;
+    };
+    expect(spotted('rat')).toBe(0);
+    expect(spotted('wight')).toBeGreaterThan(5);
+  });
 });
 
 describe('backstab and ambush', () => {
-  it('a thief does double damage in melee to a monster that has not seen them', () => {
+  it('a thief doubles the weapon dice in melee against a monster that has not seen them', () => {
     const g = field();
-    inner(g).rng.dice = (n: number, s: number) => (s === 20 ? 15 : n);
+    inner(g).rng.dice = (n: number, s: number) => (s === 20 ? 15 : n * 3);
     const rat = inner(g).spawnMonster('rat', g.player.x + 1, g.player.y);
     rat.hp = rat.maxHp = 100;
     inner(g).meleeAttack(rat);
     const first = 100 - rat.hp;
     expect(g.messages.some((m) => m.lines.join(' ').includes('BACKSTAB!'))).toBe(true);
     inner(g).meleeAttack(rat); // now it has seen you
-    expect(100 - first - rat.hp).toBe(first / 2);
+    const second = 100 - first - rat.hp;
+    // The short sword's die rolled 3 both times: the backstab adds one more die, not the bonuses.
+    expect(first - second).toBe(3);
+  });
+
+  it('a backstab does not stack with a critical', () => {
+    const g = field();
+    inner(g).rng.dice = (n: number, s: number) => (s === 20 ? 20 : n * 3);
+    const rat = inner(g).spawnMonster('rat', g.player.x + 1, g.player.y);
+    rat.hp = rat.maxHp = 100;
+    inner(g).meleeAttack(rat);
+    const backstab = 100 - rat.hp;
+    expect(g.messages.some((m) => m.lines.join(' ').includes('CRITICAL!'))).toBe(false);
+    inner(g).meleeAttack(rat); // seen now: a plain critical doubles everything
+    const crit = 100 - backstab - rat.hp;
+    expect(crit % 2).toBe(0);
+    expect(backstab).toBe(crit / 2 + 3);
+  });
+
+  it('hitting one monster alerts the others that can see it, but not sleepers', () => {
+    const g = field();
+    inner(g).rng.dice = (n: number, s: number) => (s === 20 ? 15 : n);
+    const { x, y } = g.player;
+    const rat = inner(g).spawnMonster('rat', x + 1, y);
+    rat.hp = rat.maxHp = 100;
+    const near = inner(g).spawnMonster('rat', x + 3, y);
+    const sleeper = inner(g).spawnMonster('rat', x + 3, y + 1);
+    sleeper.asleep = 5;
+    const far = inner(g).spawnMonster('rat', x - 6, y + 6);
+    for (const a of [near, sleeper, far]) a.awake = false;
+    inner(g).meleeAttack(rat);
+    expect(near.awake).toBe(true);
+    expect(sleeper.awake).toBe(false);
+    expect(far.awake).toBe(false);
   });
 
   it('a thief’s arrow at an unaware monster is an ambush: double damage', () => {

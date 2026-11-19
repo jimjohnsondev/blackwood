@@ -95,8 +95,14 @@ This is the full game, built on a copy of the MVP. It saves to its own slot
 - Monsters that haven't seen you show a small `?`, sleeping ones a `Z`.
 - SNEAK (in MENU) halves your speed and adds +5 to Sneak; attacking ends it. Darkness adds +3:
   night outdoors, or beyond the reach of your light underground.
-- A thief's melee hit on an unaware or sleeping monster is a BACKSTAB (double damage), and so is
-  their first arrow (AMBUSH).
+- An unaware monster checks twice: when you first come within 6 steps, and again when you're beside
+  it. It notices you unless d20 + stealth reaches `noticeDc` (12 + twice its level, in `rules.ts`),
+  so a rising Sneak outgrows rats long before it outgrows wights.
+- A thief's melee hit on an unaware or sleeping monster is a BACKSTAB, and so is their first arrow
+  (AMBUSH): the weapon's dice count double (triple with ASSASSIN), the bonuses once. It takes the
+  place of a critical rather than stacking with one.
+- Any monster that is hit cries out: unaware monsters within 5 steps that can see it notice you.
+  Sleepers sleep on. So a thief gets one opening strike per fight, not one per monster.
 
 **ACTIONS and MENU**
 

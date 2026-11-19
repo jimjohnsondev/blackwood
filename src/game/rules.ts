@@ -209,6 +209,13 @@ export const SPELLS: Spell[] = [
   { id: 'chain', name: 'CHAIN BOLT', mp: 6, level: 7, ranged: true, tome: true, desc: 'LEAPS BETWEEN UP TO 3 FOES.' },
 ];
 
+/**
+ * What d20 + stealth must reach for a monster of this level not to notice you. It climbs
+ * twice as fast as the level so a thief's growing Sneak can't outrun it: rats never see a
+ * sneaking thief coming, but wights and worse still might.
+ */
+export const noticeDc = (level: number): number => 12 + 2 * level;
+
 /** Check difficulties. */
 export const EASY = 10;
 export const HARD = 15;

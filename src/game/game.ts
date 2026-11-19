@@ -40,7 +40,7 @@ import {
 } from './player';
 import type { Ready } from './player';
 import {
-  ATTR_LEVELS, ATTR_NAMES, CLASSES, HARD, MAX_LEVEL, PERK_LEVELS, PERKS, SKILLS, SPELLS, XP_TABLE, mod,
+  ATTR_LEVELS, ATTR_NAMES, CLASSES, HARD, MAX_LEVEL, PERK_LEVELS, PERKS, SKILLS, SPELLS, XP_TABLE, mod, noticeDc,
   type Attrs, type BackgroundId, type ClassId, type Spell,
 } from './rules';
 import { T, TERRAIN, walkable } from './terrain';
@@ -1551,10 +1551,13 @@ export class Game {
       return;
     }
     const [n, s] = weaponDice(p);
-    let dmg = Math.max(1, this.rng.dice(n, s) + mod(p.attrs.str) + damageBonus(p));
+    const dice = this.rng.dice(n, s);
+    const bonus = mod(p.attrs.str) + damageBonus(p);
+    let dmg = Math.max(1, dice + bonus);
     let note = '';
-    if (roll === 20) { dmg *= 2; note = ' CRITICAL!'; }
-    if (p.cls === 'thief' && unseen) { dmg *= hasPerk(p, 'assassin') ? 3 : 2; note = ' BACKSTAB!'; }
+    // A backstab multiplies the weapon's dice only, and takes the place of a critical.
+    if (p.cls === 'thief' && unseen) { dmg = Math.max(1, dice * this.sneakMultiplier() + bonus); note = ' BACKSTAB!'; }
+    else if (roll === 20) { dmg *= 2; note = ' CRITICAL!'; }
     this.damageMonster(target, dmg, `YOU HIT ${the(target)} FOR ${dmg}.${note}`);
     // CLEAVE: a kill earns a free swing at another foe beside you.
     if (hasPerk(p, 'cleave') && !this.actors.includes(target) && !cleaving) {
@@ -1622,21 +1625,40 @@ export class Game {
       target.awake = true;
       return this.endTurn();
     }
-    let dmg = kind === 'bow'
-      ? Math.max(1, this.rng.dice(1, 6) + damageBonus(p, true))
-      : Math.max(1, this.rng.dice(1, hasPerk(p, 'focus') ? 6 : 4) + mod(p.attrs.wis));
+    const dice = this.rng.dice(1, kind === 'bow' ? 6 : hasPerk(p, 'focus') ? 6 : 4);
+    const extra = kind === 'bow' ? damageBonus(p, true) : mod(p.attrs.wis);
+    let dmg = Math.max(1, dice + extra);
     let note = '';
-    if (roll === 20) { dmg *= 2; note = ' CRITICAL!'; }
-    if (kind === 'bow' && p.cls === 'thief' && unaware) { dmg *= hasPerk(p, 'assassin') ? 3 : 2; note = ' AMBUSH!'; }
+    // Like a backstab: the arrow's die is multiplied, not the bonuses, and no critical on top.
+    if (kind === 'bow' && p.cls === 'thief' && unaware) { dmg = Math.max(1, dice * this.sneakMultiplier() + extra); note = ' AMBUSH!'; }
+    else if (roll === 20) { dmg *= 2; note = ' CRITICAL!'; }
     this.damageMonster(target, dmg, `YOUR ${label} HITS ${the(target)} FOR ${dmg}.${note}`);
     this.endTurn();
   }
 
 
+  /** A backstab or ambush multiplies the weapon's dice by this. */
+  private sneakMultiplier(): number {
+    return hasPerk(this.player, 'assassin') ? 3 : 2;
+  }
+
+  /**
+   * A monster that is hit cries out: the others nearby that can see it stop being unaware,
+   * so a thief gets one opening strike per fight, not one per monster. Sleepers sleep on.
+   */
+  private raiseAlarm(target: Actor): void {
+    for (const a of this.actors) {
+      if (a === target || !a.monster || a.awake || a.asleep > 0) continue;
+      if (Math.max(Math.abs(a.x - target.x), Math.abs(a.y - target.y)) > 5) continue;
+      if (this.clearLine(a.x, a.y, target.x, target.y)) a.awake = true;
+    }
+  }
+
   private damageMonster(target: Actor, dmg: number, text: string): void {
     target.hp -= dmg;
     target.awake = true;
     target.asleep = 0;
+    this.raiseAlarm(target);
     this.effects.push({ kind: 'flash', cells: [{ x: target.x, y: target.y }], color: '#ffffff', start: now() });
     this.sounds.push('hit');
     if (target.hp > 0) {
@@ -3106,7 +3128,7 @@ export class Game {
         if (due) {
           a.checks++;
           const level = MONSTERS[a.monster!].level;
-          if (this.rng.dice(1, 20) + this.stealth(a) < 10 + level) a.awake = true;
+          if (this.rng.dice(1, 20) + this.stealth(a) < noticeDc(level)) a.awake = true;
         }
         if (!a.awake) {
           if (this.rng.chance(0.3)) this.wander(a);

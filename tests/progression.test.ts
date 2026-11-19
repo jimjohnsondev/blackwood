@@ -151,17 +151,18 @@ describe('perks', () => {
     expect(b.hp).toBeLessThan(100);
   });
 
-  it('ASSASSIN: triple-damage backstabs', () => {
+  it('ASSASSIN: backstabs triple the weapon dice', () => {
     const g = newGame('thief');
     clear(g);
     givePerk(g, 'assassin');
-    inner(g).rng.dice = (n: number, s: number) => (s === 20 ? 15 : n);
+    inner(g).rng.dice = (n: number, s: number) => (s === 20 ? 15 : n * 3);
     const rat = inner(g).spawnMonster('rat', g.player.x + 1, g.player.y);
     rat.hp = rat.maxHp = 100;
     inner(g).meleeAttack(rat);
     const first = 100 - rat.hp;
     inner(g).meleeAttack(rat);
-    expect(first).toBe((100 - first - rat.hp) * 3);
+    // Two extra dice of 3 each on the backstab; the bonuses count once.
+    expect(first - (100 - first - rat.hp)).toBe(6);
   });
 
   it('SHADOW STEP: sneaking at full speed; FENCE: better prices; FAMILIAR: light', () => {
